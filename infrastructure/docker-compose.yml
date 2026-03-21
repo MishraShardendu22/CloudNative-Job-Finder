@@ -1,0 +1,264 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: jobfinder-postgres
+    environment:
+      POSTGRES_DB: jobfinder
+      POSTGRES_USER: jobfinder
+      POSTGRES_PASSWORD: jobfinder
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobfinder -d jobfinder"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: jobfinder-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: jobfinder-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:RELEASE.2025-02-18T16-25-55Z
+    container_name: jobfinder-minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.15
+    container_name: jobfinder-meilisearch
+    environment:
+      MEILI_MASTER_KEY: local-dev-master-key
+      MEILI_ENV: development
+    ports:
+      - "7700:7700"
+    volumes:
+      - meili_data:/meili_data
+
+  api-gateway:
+    build:
+      context: ..
+      dockerfile: services/api-gateway/Dockerfile
+    container_name: jobfinder-api-gateway
+    environment:
+      PORT: 8080
+      JWT_SECRET: super-secret-jwt
+      JWT_TTL: 24h
+      USER_SERVICE_URL: http://user-service:8081
+      RESUME_SERVICE_URL: http://resume-service:8082
+      RECOMMENDATION_SERVICE_URL: http://recommendation-service:8087
+    ports:
+      - "8080:8080"
+    depends_on:
+      user-service:
+        condition: service_started
+      resume-service:
+        condition: service_started
+      recommendation-service:
+        condition: service_started
+
+  user-service:
+    build:
+      context: ..
+      dockerfile: services/user-service/Dockerfile
+    container_name: jobfinder-user-service
+    environment:
+      PORT: 8081
+      DATABASE_URL: postgres://jobfinder:jobfinder@postgres:5432/jobfinder?sslmode=disable
+      EMAIL_API_URL: https://email-sender-eight-pi.vercel.app/send-email
+      EMAIL_PASS1: pass@1
+      EMAIL_PASS2: pass@3
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  resume-service:
+    build:
+      context: ..
+      dockerfile: services/resume-service/Dockerfile
+    container_name: jobfinder-resume-service
+    environment:
+      PORT: 8082
+      DATABASE_URL: postgres://jobfinder:jobfinder@postgres:5432/jobfinder?sslmode=disable
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      RABBITMQ_EXCHANGE: events
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_USE_SSL: "false"
+      MINIO_BUCKET: resumes
+      INTERNAL_API_TOKEN: internal-secret
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_started
+
+  resume-parser:
+    build:
+      context: ..
+      dockerfile: services/resume-parser/Dockerfile
+    container_name: jobfinder-resume-parser
+    environment:
+      PORT: 8083
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      RABBITMQ_EXCHANGE: events
+      RABBITMQ_QUEUE: resume-parser.queue
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_USE_SSL: "false"
+      RESUME_SERVICE_URL: http://resume-service:8082
+      INTERNAL_API_TOKEN: internal-secret
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_started
+      resume-service:
+        condition: service_started
+
+  job-scraper:
+    build:
+      context: ..
+      dockerfile: services/job-scraper/Dockerfile
+    container_name: jobfinder-job-scraper
+    environment:
+      PORT: 8084
+      DATABASE_URL: postgres://jobfinder:jobfinder@postgres:5432/jobfinder?sslmode=disable
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      RABBITMQ_EXCHANGE: events
+      INTERNAL_API_TOKEN: internal-secret
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  job-processor:
+    build:
+      context: ..
+      dockerfile: services/job-processor/Dockerfile
+    container_name: jobfinder-job-processor
+    environment:
+      PORT: 8085
+      DATABASE_URL: postgres://jobfinder:jobfinder@postgres:5432/jobfinder?sslmode=disable
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      RABBITMQ_EXCHANGE: events
+      MEILI_HOST: http://meilisearch:7700
+      MEILI_API_KEY: local-dev-master-key
+      INTERNAL_API_TOKEN: internal-secret
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      meilisearch:
+        condition: service_started
+
+  job-matcher:
+    build:
+      context: ..
+      dockerfile: services/job-matcher/Dockerfile
+    container_name: jobfinder-job-matcher
+    environment:
+      PORT: 8086
+      DATABASE_URL: postgres://jobfinder:jobfinder@postgres:5432/jobfinder?sslmode=disable
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      RABBITMQ_EXCHANGE: events
+      INTERNAL_API_TOKEN: internal-secret
+      TOP_MATCH_LIMIT: 50
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  recommendation-service:
+    build:
+      context: ..
+      dockerfile: services/recommendation-service/Dockerfile
+    container_name: jobfinder-recommendation-service
+    environment:
+      PORT: 8087
+      DATABASE_URL: postgres://jobfinder:jobfinder@postgres:5432/jobfinder?sslmode=disable
+      REDIS_ADDR: redis:6379
+      CACHE_TTL: 2m
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  scheduler:
+    build:
+      context: ..
+      dockerfile: services/scheduler/Dockerfile
+    container_name: jobfinder-scheduler
+    environment:
+      PORT: 8088
+      DATABASE_URL: postgres://jobfinder:jobfinder@postgres:5432/jobfinder?sslmode=disable
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      RABBITMQ_EXCHANGE: events
+      JOB_SCRAPER_URL: http://job-scraper:8084
+      JOB_MATCHER_URL: http://job-matcher:8086
+      CRON_SCRAPE: "*/30 * * * *"
+      CRON_MATCH: "15 * * * *"
+      CRON_WEEKLY_EMAIL: "0 9 * * 1"
+      INTERNAL_API_TOKEN: internal-secret
+      EMAIL_API_URL: https://email-sender-eight-pi.vercel.app/send-email
+      EMAIL_PASS1: pass@1
+      EMAIL_PASS2: pass@3
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      job-scraper:
+        condition: service_started
+      job-matcher:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  meili_data:
