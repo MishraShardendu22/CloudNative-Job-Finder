@@ -47,7 +47,10 @@ async function safeParse(response: Response) {
   }
 }
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+async function request<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
   const { method = "GET", body, headers } = options;
 
   const finalHeaders = new Headers(headers);
@@ -107,7 +110,8 @@ function normalizeResumesResponse(payload: unknown): Resume[] {
 
     const fileURL = row.file_url ?? "";
     const derivedName =
-      fileURL.split("/").filter(Boolean).pop()?.split("?")[0] ?? `Resume ${index + 1}`;
+      fileURL.split("/").filter(Boolean).pop()?.split("?")[0] ??
+      `Resume ${index + 1}`;
 
     return {
       id: row.id ?? String(index),
@@ -122,7 +126,9 @@ function normalizeResumesResponse(payload: unknown): Resume[] {
   });
 }
 
-function normalizeRecommendationsResponse(payload: unknown): RecommendationResponse {
+function normalizeRecommendationsResponse(
+  payload: unknown,
+): RecommendationResponse {
   const page = (payload ?? {}) as {
     resume_id?: string;
     jobs?: unknown[];
@@ -193,5 +199,7 @@ export const api = {
   },
 
   recommendations: (resumeId: string) =>
-    request<unknown>(`/recommendations/${resumeId}`).then(normalizeRecommendationsResponse),
+    request<unknown>(`/recommendations/${resumeId}`).then(
+      normalizeRecommendationsResponse,
+    ),
 };

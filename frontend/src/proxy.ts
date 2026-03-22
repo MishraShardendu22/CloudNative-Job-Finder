@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 const PROTECTED_ROUTES = [
   "/dashboard",
@@ -31,5 +31,10 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/resumes/:path*", "/recommendations/:path*", "/profile/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/resumes/:path*",
+    "/recommendations/:path*",
+    "/profile/:path*",
+  ],
 };

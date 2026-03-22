@@ -3,8 +3,8 @@
 import { BriefcaseBusiness, Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -19,26 +19,25 @@ export function Navbar() {
   const { setTheme, resolvedTheme } = useTheme();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/85 backdrop-blur-lg dark:border-zinc-800 dark:bg-zinc-950/70">
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <span className="rounded-lg bg-zinc-900 p-2 text-white dark:bg-zinc-100 dark:text-zinc-900">
+    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
+      <div className="mx-auto flex h-16 w-full max-w-[1280px] items-center justify-between px-6">
+        <Link href="/dashboard" className="flex items-center gap-2.5">
+          <span className="rounded-lg bg-primary p-2 text-white">
             <BriefcaseBusiness className="h-4 w-4" />
           </span>
-          <span className="text-sm font-semibold tracking-wide text-zinc-900 dark:text-zinc-100">
+          <span className="text-sm font-semibold tracking-wide text-foreground">
             Job Finder
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-2 md:flex">
+        <nav className="hidden items-center gap-1 lg:flex">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "rounded-lg px-3 py-2 text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
-                pathname === link.href &&
-                  "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100",
+                "rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-card hover:text-foreground",
+                pathname === link.href && "bg-primary/10 text-primary",
               )}
             >
               {link.label}
@@ -58,6 +57,23 @@ export function Navbar() {
             <Moon className="h-4 w-4" />
           )}
         </Button>
+      </div>
+
+      <div className="border-t lg:hidden">
+        <nav className="mx-auto flex h-12 w-full max-w-[1280px] items-center gap-1 overflow-x-auto px-6">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium text-muted",
+                pathname === link.href && "bg-primary/10 text-primary",
+              )}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
       </div>
     </header>
   );

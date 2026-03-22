@@ -2,7 +2,6 @@
 
 import { UploadCloud } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
 type ResumeUploadProps = {
@@ -33,9 +32,9 @@ export function ResumeUpload({ onUpload, uploading }: ResumeUploadProps) {
 
   const borderClass = useMemo(() => {
     if (dragging) {
-      return "border-zinc-900 bg-zinc-50 dark:border-zinc-100 dark:bg-zinc-900";
+      return "border-primary bg-primary/5";
     }
-    return "border-zinc-300 dark:border-zinc-700";
+    return "border";
   }, [dragging]);
 
   const handleFiles = async (files: FileList | null) => {
@@ -52,8 +51,21 @@ export function ResumeUpload({ onUpload, uploading }: ResumeUploadProps) {
 
   return (
     <div className="space-y-3">
-      <div
-        className={`rounded-2xl border-2 border-dashed p-8 text-center transition ${borderClass}`}
+      <input
+        ref={inputRef}
+        type="file"
+        className="hidden"
+        accept=".pdf,.doc,.docx"
+        onChange={(event) => {
+          void handleFiles(event.target.files);
+        }}
+      />
+
+      <button
+        type="button"
+        className={`w-full rounded-[12px] border-2 border-dashed p-8 text-center transition-colors duration-180 ${borderClass}`}
+        disabled={uploading}
+        onClick={() => inputRef.current?.click()}
         onDragOver={(event) => {
           event.preventDefault();
           setDragging(true);
@@ -65,33 +77,18 @@ export function ResumeUpload({ onUpload, uploading }: ResumeUploadProps) {
           void handleFiles(event.dataTransfer.files);
         }}
       >
-        <input
-          ref={inputRef}
-          type="file"
-          className="hidden"
-          accept=".pdf,.doc,.docx"
-          onChange={(event) => {
-            void handleFiles(event.target.files);
-          }}
-        />
-
-        <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+        <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-background text-muted">
           <UploadCloud className="h-5 w-5" />
         </div>
 
-        <p className="text-sm text-zinc-700 dark:text-zinc-300">
+        <p className="text-sm text-muted">
           Drag and drop your resume, or click below to choose a file.
         </p>
 
-        <Button
-          className="mt-4"
-          variant="secondary"
-          disabled={uploading}
-          onClick={() => inputRef.current?.click()}
-        >
+        <span className="mt-4 inline-flex h-10 items-center rounded-lg border bg-card px-4 text-sm font-medium text-foreground">
           {uploading ? "Uploading..." : "Select Resume"}
-        </Button>
-      </div>
+        </span>
+      </button>
 
       {uploading || progress > 0 ? <Progress value={progress} /> : null}
     </div>

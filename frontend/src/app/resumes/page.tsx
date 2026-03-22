@@ -21,11 +21,13 @@ export default function ResumesPage() {
       title="Resumes"
       description="Upload resumes, track metadata, and prep for recommendations."
     >
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-1">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <Card className="xl:col-span-4">
           <CardHeader>
             <CardTitle>Upload Resume</CardTitle>
-            <CardDescription>PDF and DOC formats are supported.</CardDescription>
+            <CardDescription>
+              PDF and DOC formats are supported.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ResumeUpload
@@ -35,10 +37,12 @@ export default function ResumesPage() {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
+        <Card className="xl:col-span-8">
           <CardHeader>
             <CardTitle>Resume Library</CardTitle>
-            <CardDescription>Latest uploads and processing status.</CardDescription>
+            <CardDescription>
+              Latest uploads and processing status.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {resumesQuery.isLoading ? (
@@ -48,12 +52,12 @@ export default function ResumesPage() {
                 <Skeleton className="h-14 w-full" />
               </div>
             ) : resumesQuery.isError ? (
-              <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+              <div className="flex items-center gap-2 rounded-lg border border-danger/20 bg-danger/10 p-3 text-sm text-danger">
                 <AlertTriangle className="h-4 w-4" />
                 Failed to load resumes. Please retry shortly.
               </div>
             ) : (resumesQuery.data?.length ?? 0) === 0 ? (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-muted">
                 No resumes uploaded yet. Add your first resume to get started.
               </p>
             ) : (
@@ -61,16 +65,20 @@ export default function ResumesPage() {
                 {resumesQuery.data?.map((resume) => (
                   <div
                     key={resume.id}
-                    className="rounded-xl border border-zinc-200 bg-zinc-50/70 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900/50"
+                    className="rounded-lg border bg-background px-4 py-3"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-medium text-zinc-900 dark:text-zinc-100">{resume.filename}</p>
-                      <span className="rounded-full bg-zinc-200 px-2 py-1 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+                      <p className="font-medium text-foreground">
+                        {resume.filename}
+                      </p>
+                      <span className="rounded-full bg-primary/10 px-2 py-1 text-xs text-primary">
                         {resume.status ?? "ready"}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                      {resume.created_at ? new Date(resume.created_at).toLocaleString() : "No timestamp"}
+                    <p className="mt-1 text-xs text-muted">
+                      {resume.created_at
+                        ? new Date(resume.created_at).toLocaleString()
+                        : "No timestamp"}
                     </p>
                   </div>
                 ))}

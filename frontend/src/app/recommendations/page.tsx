@@ -42,17 +42,21 @@ export default function RecommendationsPage() {
             <Label htmlFor="resume-select">Resume</Label>
             <select
               id="resume-select"
-              className="h-10 w-full rounded-xl border border-zinc-300 bg-white px-3 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              className="h-10 w-full rounded-lg border bg-card px-3 text-sm text-foreground outline-none transition-colors duration-180 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
               value={selectedResumeId ?? ""}
               onChange={(event) => setResumeId(event.target.value || null)}
             >
               {(resumesQuery.data?.length ?? 0) === 0 ? (
-                <option value="" className="text-zinc-900 dark:text-zinc-100">
+                <option value="" className="text-foreground">
                   No resumes available
                 </option>
               ) : null}
               {(resumesQuery.data ?? []).map((resume) => (
-                <option key={resume.id} value={resume.id} className="text-zinc-900 dark:text-zinc-100">
+                <option
+                  key={resume.id}
+                  value={resume.id}
+                  className="text-foreground"
+                >
                   {resume.filename || `Resume ${resume.id.slice(0, 8)}`}
                 </option>
               ))}
@@ -67,13 +71,13 @@ export default function RecommendationsPage() {
           </div>
         ) : recommendationsQuery.isError ? (
           <Card>
-            <CardContent className="pt-6 text-sm text-red-600 dark:text-red-300">
+            <CardContent className="pt-6 text-sm text-danger">
               Failed to fetch recommendations. Try again in a moment.
             </CardContent>
           </Card>
         ) : jobs.length === 0 ? (
           <Card>
-            <CardContent className="pt-6 text-sm text-zinc-500 dark:text-zinc-400">
+            <CardContent className="pt-6 text-sm text-muted">
               No recommendations available for this resume yet.
             </CardContent>
           </Card>

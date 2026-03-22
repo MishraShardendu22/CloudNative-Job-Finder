@@ -1,48 +1,89 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #f9fafb;
+  --foreground: #111827;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --muted: #6b7280;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --danger: #dc2626;
   color-scheme: light;
 }
 
 .dark {
-  --background: #020617;
-  --foreground: #e2e8f0;
+  --background: #0b1220;
+  --foreground: #f3f4f6;
+  --card: #111827;
+  --border: #1f2937;
+  --muted: #9ca3af;
+  --primary: #60a5fa;
+  --primary-hover: #3b82f6;
+  --danger: #f87171;
   color-scheme: dark;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-inter);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 * {
-  border-color: color-mix(in srgb, var(--foreground) 12%, transparent);
+  border-color: var(--border);
 }
 
 input,
 textarea,
 select {
   color: var(--foreground);
-  background-color: color-mix(in srgb, var(--background) 88%, transparent);
+  background-color: var(--card);
 }
 
 select option {
   color: var(--foreground);
-  background-color: var(--background);
+  background-color: var(--card);
+}
+
+h1 {
+  font-size: 32px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 24px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 20px;
+  line-height: 1.4;
+  font-weight: 600;
 }
 
 a,
 button {
-  transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease,
-    opacity 140ms ease;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    opacity 180ms ease,
+    box-shadow 180ms ease;
 }

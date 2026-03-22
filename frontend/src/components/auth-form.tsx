@@ -43,7 +43,9 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>{mode === "login" ? "Welcome back" : "Create account"}</CardTitle>
+        <CardTitle>
+          {mode === "login" ? "Welcome back" : "Create account"}
+        </CardTitle>
         <CardDescription>
           {mode === "login"
             ? "Login to access your resumes and recommendations."
@@ -55,17 +57,29 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
         <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="you@example.com" {...register("email")} />
+            <Input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              aria-invalid={Boolean(errors.email)}
+              {...register("email")}
+            />
             {errors.email ? (
-              <p className="text-xs text-red-500">{errors.email.message}</p>
+              <p className="text-xs text-danger">{errors.email.message}</p>
             ) : null}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" placeholder="******" {...register("password")} />
+            <Input
+              id="password"
+              type="password"
+              placeholder="******"
+              aria-invalid={Boolean(errors.password)}
+              {...register("password")}
+            />
             {errors.password ? (
-              <p className="text-xs text-red-500">{errors.password.message}</p>
+              <p className="text-xs text-danger">{errors.password.message}</p>
             ) : null}
           </div>
 

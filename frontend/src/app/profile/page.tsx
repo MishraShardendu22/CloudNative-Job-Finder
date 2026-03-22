@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Mail, UserRound } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,19 +25,27 @@ export default function ProfilePage() {
               <Skeleton className="h-6 w-64" />
             </div>
           ) : profileQuery.isError ? (
-            <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-300">
+            <div className="flex items-center gap-2 text-sm text-danger">
               <AlertTriangle className="h-4 w-4" />
               Could not fetch profile.
             </div>
           ) : (
             <div className="space-y-4 text-sm">
-              <div className="flex items-center gap-2 text-zinc-700 dark:text-zinc-200">
-                <UserRound className="h-4 w-4" />
-                <span>{profileQuery.data?.name ?? "No display name set"}</span>
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted">
+                  Name
+                </p>
+                <p className="text-foreground">
+                  {profileQuery.data?.name ?? "No display name set"}
+                </p>
               </div>
-              <div className="flex items-center gap-2 text-zinc-700 dark:text-zinc-200">
-                <Mail className="h-4 w-4" />
-                <span>{profileQuery.data?.email ?? "No email found"}</span>
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted">
+                  Email
+                </p>
+                <p className="text-foreground">
+                  {profileQuery.data?.email ?? "No email found"}
+                </p>
               </div>
             </div>
           )}

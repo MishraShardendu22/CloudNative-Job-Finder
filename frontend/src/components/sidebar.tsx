@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  FileText,
-  LayoutDashboard,
-  Sparkles,
-  UserRound,
-} from "lucide-react";
+import { FileText, LayoutDashboard, Sparkles, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -21,7 +16,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-64 shrink-0 border-r border-zinc-200 bg-white/70 p-4 dark:border-zinc-800 dark:bg-zinc-950/70 lg:block">
+    <aside className="hidden w-[240px] shrink-0 border-r bg-background p-4 lg:block">
       <div className="space-y-1">
         {items.map((item) => {
           const Icon = item.icon;
@@ -32,9 +27,8 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
-                active &&
-                  "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100",
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted transition-colors duration-180 hover:bg-card hover:text-foreground",
+                active && "bg-primary/10 text-primary",
               )}
             >
               <Icon className="h-4 w-4" />
