@@ -44,12 +44,16 @@ Production-style local microservice system built with Go + Python for resume par
 ```
 
 ## Quick Start
-1. Build and start everything:
+1. Start backend services and frontend in one command:
    ```bash
-   make up
+  make dev
    ```
 2. API gateway is available at `http://localhost:8080`.
-3. Infrastructure UIs:
+3. Stop everything:
+  ```bash
+  make stop
+  ```
+4. Infrastructure UIs:
    - RabbitMQ: `http://localhost:15672` (`guest` / `guest`)
    - MinIO Console: `http://localhost:9001` (`minioadmin` / `minioadmin`)
    - Meilisearch: `http://localhost:7700`
@@ -82,9 +86,10 @@ Scores are written to `resume_job_matches`.
 
 ## Useful Commands
 ```bash
-make up
+make dev
 make logs
 make ps
+make stop
 make down
 make clean
 ```
