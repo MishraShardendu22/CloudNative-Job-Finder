@@ -50,8 +50,10 @@ func main() {
 	mux.HandleFunc("POST /login", a.handleLogin)
 	mux.HandleFunc("POST /resume/upload", a.handleResumeUpload)
 	mux.HandleFunc("GET /resumes", a.handleListResumes)
+	mux.HandleFunc("DELETE /resumes/{resume_id}", a.handleDeleteResume)
 	mux.HandleFunc("GET /recommendations/{resume_id}", a.handleRecommendations)
 	mux.HandleFunc("GET /profile", a.handleProfile)
+	mux.HandleFunc("PUT /profile", a.handleUpdateProfile)
 
 	server := &http.Server{
 		Addr:              ":" + port,
@@ -144,6 +146,17 @@ func (a *app) handleProfile(w http.ResponseWriter, r *http.Request) {
 	a.proxyWithHeaders(w, r, target, map[string]string{"X-User-ID": claims.UserID})
 }
 
+func (a *app) handleUpdateProfile(w http.ResponseWriter, r *http.Request) {
+	claims := getClaims(r.Context())
+	if claims == nil {
+		httpx.WriteError(w, http.StatusUnauthorized, "missing auth claims")
+		return
+	}
+
+	target := a.userServiceURL + "/internal/users/profile"
+	a.proxyWithHeaders(w, r, target, map[string]string{"X-User-ID": claims.UserID})
+}
+
 func (a *app) handleResumeUpload(w http.ResponseWriter, r *http.Request) {
 	claims := getClaims(r.Context())
 	if claims == nil {
@@ -163,6 +176,23 @@ func (a *app) handleListResumes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	target := a.resumeServiceURL + "/internal/resumes"
+	a.proxyWithHeaders(w, r, target, map[string]string{"X-User-ID": claims.UserID})
+}
+
+func (a *app) handleDeleteResume(w http.ResponseWriter, r *http.Request) {
+	claims := getClaims(r.Context())
+	if claims == nil {
+		httpx.WriteError(w, http.StatusUnauthorized, "missing auth claims")
+		return
+	}
+
+	resumeID := r.PathValue("resume_id")
+	if resumeID == "" {
+		httpx.WriteError(w, http.StatusBadRequest, "resume_id is required")
+		return
+	}
+
+	target := a.resumeServiceURL + "/internal/resumes/" + resumeID
 	a.proxyWithHeaders(w, r, target, map[string]string{"X-User-ID": claims.UserID})
 }
 

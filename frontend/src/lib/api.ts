@@ -1,6 +1,6 @@
 import type { RecommendationResponse } from "@/types/job";
 import type { Resume, ResumeUploadResponse } from "@/types/resume";
-import type { AuthPayload, User } from "@/types/user";
+import type { AuthPayload, ProfileUpdatePayload, User } from "@/types/user";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ?? "/api";
@@ -47,6 +47,40 @@ async function safeParse(response: Response) {
   }
 }
 
+function getErrorMessage(parsed: unknown, status: number, statusText: string) {
+  if (typeof parsed === "string" && parsed.trim()) {
+    return parsed;
+  }
+
+  if (parsed && typeof parsed === "object") {
+    const candidate = parsed as {
+      message?: unknown;
+      error?: unknown;
+      detail?: unknown;
+    };
+
+    if (typeof candidate.message === "string" && candidate.message.trim()) {
+      return candidate.message;
+    }
+
+    if (typeof candidate.error === "string" && candidate.error.trim()) {
+      return candidate.error;
+    }
+
+    if (typeof candidate.detail === "string" && candidate.detail.trim()) {
+      return candidate.detail;
+    }
+  }
+
+  if (status === 409) {
+    return "Request conflict. The resource may already exist.";
+  }
+
+  return statusText
+    ? `${statusText} (status ${status})`
+    : `Request failed with status ${status}`;
+}
+
 async function request<T>(
   path: string,
   options: RequestOptions = {},
@@ -79,10 +113,11 @@ async function request<T>(
   const parsed = await safeParse(response);
 
   if (!response.ok) {
-    const message =
-      typeof parsed === "object" && parsed && "message" in parsed
-        ? String(parsed.message)
-        : `Request failed with status ${response.status}`;
+    const message = getErrorMessage(
+      parsed,
+      response.status,
+      response.statusText,
+    );
     throw new ApiError(message, response.status);
   }
 
@@ -113,9 +148,11 @@ function normalizeResumesResponse(payload: unknown): Resume[] {
       fileURL.split("/").filter(Boolean).pop()?.split("?")[0] ??
       `Resume ${index + 1}`;
 
+    const prettyName = derivedName.replace(/^\d{8}T\d{6}_[^_]+_(.+)$/, "$1");
+
     return {
       id: row.id ?? String(index),
-      filename: row.filename ?? decodeURIComponent(derivedName),
+      filename: row.filename ?? decodeURIComponent(prettyName),
       created_at: row.created_at,
       status:
         row.status ??
@@ -141,6 +178,31 @@ function normalizeRecommendationsResponse(
       ? page.items
       : [];
 
+  const rawScores = rawJobs
+    .map((job) => {
+      const row = (job ?? {}) as { score?: unknown };
+      return typeof row.score === "number" && Number.isFinite(row.score)
+        ? row.score
+        : 0;
+    })
+    .filter((score) => score >= 0);
+
+  const maxRawScore = rawScores.length > 0 ? Math.max(...rawScores) : 0;
+
+  const normalizeScore = (raw: number) => {
+    if (raw <= 0) return 0;
+
+    if (maxRawScore <= 1) {
+      return Math.min(100, raw * 100);
+    }
+
+    if (maxRawScore <= 100) {
+      return Math.min(100, raw);
+    }
+
+    return Math.min(100, (raw / maxRawScore) * 100);
+  };
+
   return {
     resume_id: page.resume_id ?? "",
     jobs: rawJobs.map((job, index) => {
@@ -161,7 +223,10 @@ function normalizeRecommendationsResponse(
         title: row.title ?? "Untitled role",
         company: row.company ?? "Unknown company",
         location: row.location ?? "Remote",
-        score: typeof row.score === "number" ? row.score : 0,
+        score:
+          typeof row.score === "number" && Number.isFinite(row.score)
+            ? normalizeScore(row.score)
+            : 0,
         apply_url: row.apply_url ?? row.url ?? "#",
         summary: row.summary,
       };
@@ -184,10 +249,21 @@ export const api = {
 
   profile: () => request<User>("/profile"),
 
+  updateProfile: (payload: ProfileUpdatePayload) =>
+    request<User>("/profile", {
+      method: "PUT",
+      body: payload,
+    }),
+
   resumes: async () => {
     const payload = await request<unknown>("/resumes");
     return normalizeResumesResponse(payload);
   },
+
+  deleteResume: (resumeId: string) =>
+    request<{ message?: string }>(`/resumes/${resumeId}`, {
+      method: "DELETE",
+    }),
 
   uploadResume: (file: File) => {
     const formData = new FormData();

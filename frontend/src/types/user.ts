@@ -9,3 +9,7 @@ export type AuthPayload = {
   email: string;
   password: string;
 };
+
+export type ProfileUpdatePayload = {
+  email: string;
+};

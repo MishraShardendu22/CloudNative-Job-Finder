@@ -44,12 +44,12 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle>
-          {mode === "login" ? "Welcome back" : "Create account"}
+          {mode === "login" ? "Welcome Back" : "Create Your Account"}
         </CardTitle>
         <CardDescription>
           {mode === "login"
-            ? "Login to access your resumes and recommendations."
-            : "Signup and start matching with jobs quickly."}
+            ? "Sign in to continue managing resumes and recommendation workflows."
+            : "Set up your workspace and start generating high-confidence matches."}
         </CardDescription>
       </CardHeader>
 

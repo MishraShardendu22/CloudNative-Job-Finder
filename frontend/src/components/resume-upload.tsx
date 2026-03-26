@@ -63,7 +63,7 @@ export function ResumeUpload({ onUpload, uploading }: ResumeUploadProps) {
 
       <button
         type="button"
-        className={`w-full rounded-[12px] border-2 border-dashed p-8 text-center transition-colors duration-180 ${borderClass}`}
+        className={`w-full rounded-2xl border-2 border-dashed p-8 text-center transition-colors duration-180 ${borderClass}`}
         disabled={uploading}
         onClick={() => inputRef.current?.click()}
         onDragOver={(event) => {
@@ -77,7 +77,7 @@ export function ResumeUpload({ onUpload, uploading }: ResumeUploadProps) {
           void handleFiles(event.dataTransfer.files);
         }}
       >
-        <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-background text-muted">
+        <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background text-muted">
           <UploadCloud className="h-5 w-5" />
         </div>
 

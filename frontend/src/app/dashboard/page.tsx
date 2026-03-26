@@ -30,13 +30,13 @@ export default function DashboardPage() {
 
   const chartData = recommendations.slice(0, 6).map((job) => ({
     name: job.company,
-    score: Math.round(job.score * 100),
+    score: Math.round(job.score),
   }));
 
   return (
     <AppShell
       title="Dashboard"
-      description="Track resumes, recommendation quality, and quick actions."
+      description="Monitor intake velocity, recommendation quality, and next-best actions in one view."
     >
       {resumesQuery.isLoading ? (
         <div className="space-y-4">
@@ -58,9 +58,9 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
             <Card className="xl:col-span-8">
               <CardHeader>
-                <CardTitle>Match quality snapshot</CardTitle>
+                <CardTitle>Match Quality Snapshot</CardTitle>
                 <CardDescription>
-                  Top recommendation scores by company.
+                  Top recommendation scores by company, normalized out of 100.
                 </CardDescription>
               </CardHeader>
               <CardContent className="h-72">
@@ -76,7 +76,11 @@ export default function DashboardPage() {
                         stroke="currentColor"
                         className="text-muted"
                       />
-                      <YAxis stroke="currentColor" className="text-muted" />
+                      <YAxis
+                        domain={[0, 100]}
+                        stroke="currentColor"
+                        className="text-muted"
+                      />
                       <Tooltip />
                       <Bar dataKey="score" fill="var(--primary)" radius={8} />
                     </BarChart>
@@ -87,15 +91,15 @@ export default function DashboardPage() {
 
             <Card className="xl:col-span-4">
               <CardHeader>
-                <CardTitle>Quick actions</CardTitle>
+                <CardTitle>Execution Checklist</CardTitle>
                 <CardDescription>
-                  Move faster through your job search flow.
+                  Keep your recommendation quality high with a repeatable loop.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-muted">
-                <p>1. Upload a fresh resume on the resumes page.</p>
-                <p>2. Open recommendations to review best-fit roles.</p>
-                <p>3. Update your profile to improve relevance.</p>
+                <p>1. Upload a fresh resume in Resume Library.</p>
+                <p>2. Validate top scoring roles in Recommendations.</p>
+                <p>3. Refine profile details to improve ranking quality.</p>
               </CardContent>
             </Card>
           </div>

@@ -172,7 +172,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-
   job-processor:
     build:
       context: ..

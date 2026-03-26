@@ -30,7 +30,7 @@ export default function RecommendationsPage() {
   return (
     <AppShell
       title="Recommendations"
-      description="Fetch and evaluate role matches for each resume."
+      description="Evaluate ranked opportunities for each resume with standardized match scoring."
     >
       <div className="space-y-6">
         <Card>
@@ -42,7 +42,7 @@ export default function RecommendationsPage() {
             <Label htmlFor="resume-select">Resume</Label>
             <select
               id="resume-select"
-              className="h-10 w-full rounded-lg border bg-card px-3 text-sm text-foreground outline-none transition-colors duration-180 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+              className="h-11 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground outline-none transition-colors duration-180 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
               value={selectedResumeId ?? ""}
               onChange={(event) => setResumeId(event.target.value || null)}
             >

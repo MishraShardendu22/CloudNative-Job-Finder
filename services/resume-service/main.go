@@ -93,6 +93,7 @@ func main() {
 	mux.HandleFunc("GET /health", a.handleHealth)
 	mux.HandleFunc("POST /internal/resumes/upload", a.handleUpload)
 	mux.HandleFunc("GET /internal/resumes", a.handleList)
+	mux.HandleFunc("DELETE /internal/resumes/{resume_id}", a.handleDelete)
 	mux.HandleFunc("PUT /internal/resumes/{resume_id}/parsed", a.handleUpdateParsed)
 
 	server := &http.Server{
@@ -241,6 +242,41 @@ func (a *app) handleList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"items": resumes, "count": len(resumes)})
+}
+
+func (a *app) handleDelete(w http.ResponseWriter, r *http.Request) {
+	userID := strings.TrimSpace(r.Header.Get("X-User-ID"))
+	if userID == "" {
+		httpx.WriteError(w, http.StatusUnauthorized, "X-User-ID header is required")
+		return
+	}
+
+	resumeID := strings.TrimSpace(r.PathValue("resume_id"))
+	if resumeID == "" {
+		httpx.WriteError(w, http.StatusBadRequest, "resume_id is required")
+		return
+	}
+
+	var objectKey string
+	err := a.pool.QueryRow(
+		r.Context(),
+		`DELETE FROM resumes
+		 WHERE id = $1 AND user_id = $2
+		 RETURNING object_key`,
+		resumeID,
+		userID,
+	).Scan(&objectKey)
+	if err != nil {
+		httpx.WriteError(w, http.StatusNotFound, "resume not found")
+		return
+	}
+
+	err = a.minio.RemoveObject(r.Context(), a.bucket, objectKey, minio.RemoveObjectOptions{})
+	if err != nil {
+		log.Printf("failed to remove object from storage: %v", err)
+	}
+
+	httpx.WriteJSON(w, http.StatusOK, map[string]string{"message": "resume removed"})
 }
 
 func (a *app) handleUpdateParsed(w http.ResponseWriter, r *http.Request) {

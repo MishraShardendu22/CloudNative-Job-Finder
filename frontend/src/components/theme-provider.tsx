@@ -9,8 +9,8 @@ import {
   useState,
 } from "react";
 
-type Theme = "light" | "dark";
-type ThemeSetting = Theme | "system";
+type Theme = "dark";
+type ThemeSetting = "dark";
 
 type ThemeContextValue = {
   resolvedTheme: Theme;
@@ -20,38 +20,22 @@ type ThemeContextValue = {
 type ThemeProviderProps = {
   children: ReactNode;
   defaultTheme?: ThemeSetting;
-  enableSystem?: boolean;
   storageKey?: string;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-function getSystemTheme(): Theme {
-  if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-}
-
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
-  enableSystem = true,
+  defaultTheme = "dark",
   storageKey = "jobfinder-theme",
 }: ThemeProviderProps) {
-  const [resolvedTheme, setResolvedTheme] = useState<Theme>("light");
+  const [resolvedTheme, setResolvedTheme] = useState<Theme>("dark");
 
   useEffect(() => {
-    const saved = localStorage.getItem(storageKey) as ThemeSetting | null;
-    const initial = saved ?? defaultTheme;
-    const next =
-      initial === "system"
-        ? enableSystem
-          ? getSystemTheme()
-          : "light"
-        : initial;
-    setResolvedTheme(next);
-  }, [defaultTheme, enableSystem, storageKey]);
+    localStorage.setItem(storageKey, defaultTheme);
+    setResolvedTheme("dark");
+  }, [defaultTheme, storageKey]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -63,17 +47,12 @@ export function ThemeProvider({
     () => ({
       resolvedTheme,
       setTheme: (theme) => {
-        const next =
-          theme === "system"
-            ? enableSystem
-              ? getSystemTheme()
-              : "light"
-            : theme;
-        localStorage.setItem(storageKey, theme);
-        setResolvedTheme(next);
+        if (theme !== "dark") return;
+        localStorage.setItem(storageKey, "dark");
+        setResolvedTheme("dark");
       },
     }),
-    [enableSystem, resolvedTheme, storageKey],
+    [resolvedTheme, storageKey],
   );
 
   return (

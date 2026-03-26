@@ -50,6 +50,7 @@ func main() {
 	mux.HandleFunc("POST /internal/users/signup", a.handleSignup)
 	mux.HandleFunc("POST /internal/users/login", a.handleLogin)
 	mux.HandleFunc("GET /internal/users/profile", a.handleProfile)
+	mux.HandleFunc("PUT /internal/users/profile", a.handleUpdateProfile)
 
 	server := &http.Server{
 		Addr:              ":" + port,
@@ -178,6 +179,52 @@ func (a *app) handleProfile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		httpx.WriteError(w, http.StatusInternalServerError, "failed to fetch profile")
+		return
+	}
+
+	httpx.WriteJSON(w, http.StatusOK, user)
+}
+
+func (a *app) handleUpdateProfile(w http.ResponseWriter, r *http.Request) {
+	userID := strings.TrimSpace(r.Header.Get("X-User-ID"))
+	if userID == "" {
+		httpx.WriteError(w, http.StatusBadRequest, "X-User-ID header is required")
+		return
+	}
+
+	var req models.UpdateProfileRequest
+	if err := httpx.ReadJSON(r, &req); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid update profile payload")
+		return
+	}
+
+	req.Email = strings.TrimSpace(strings.ToLower(req.Email))
+	if req.Email == "" || !strings.Contains(req.Email, "@") {
+		httpx.WriteError(w, http.StatusBadRequest, "valid email is required")
+		return
+	}
+
+	var user models.UserResponse
+	err := a.pool.QueryRow(
+		r.Context(),
+		`UPDATE users
+		 SET email = $1
+		 WHERE id = $2
+		 RETURNING id, email, created_at`,
+		req.Email,
+		userID,
+	).Scan(&user.ID, &user.Email, &user.CreatedAt)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			httpx.WriteError(w, http.StatusConflict, "email already exists")
+			return
+		}
+		if errors.Is(err, pgx.ErrNoRows) {
+			httpx.WriteError(w, http.StatusNotFound, "user not found")
+			return
+		}
+		httpx.WriteError(w, http.StatusInternalServerError, "failed to update profile")
 		return
 	}
 

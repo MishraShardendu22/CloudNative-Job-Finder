@@ -5,21 +5,20 @@ import { Button } from "@/components/ui/button";
 export default function Home() {
   return (
     <main className="min-h-screen bg-background px-6">
-      <section className="mx-auto grid w-full max-w-[1280px] gap-12 py-24 lg:grid-cols-12 lg:items-center">
-        <div className="space-y-6 lg:col-span-7">
-          <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted">
+      <section className="mx-auto grid w-full max-w-[1320px] gap-14 py-24 lg:grid-cols-12 lg:items-center">
+        <div className="space-y-8 lg:col-span-7">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
             <BriefcaseBusiness className="h-3.5 w-3.5" />
             Resume-driven matching engine
           </span>
 
-          <h1 className="text-balance text-[32px] font-semibold tracking-tight text-foreground sm:text-[40px]">
-            Turn every resume into targeted job recommendations.
+          <h1 className="text-balance text-[36px] font-bold tracking-tight text-foreground sm:text-[54px] sm:leading-[1.05]">
+            Precision Job Matching for High-Intent Candidates
           </h1>
 
-          <p className="max-w-xl text-base leading-relaxed text-muted">
-            Upload your resumes, analyze top-fit roles, and track opportunities
-            from a single dashboard connected to your existing recommendation
-            backend.
+          <p className="max-w-xl text-base leading-relaxed text-muted sm:text-lg">
+            Centralize resume intake, ranking, and opportunity review in one
+            focused command center built for consistent, high-quality outbound.
           </p>
 
           <div className="flex flex-wrap gap-3">
@@ -35,33 +34,35 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="rounded-[12px] border bg-card p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] lg:col-span-5">
+        <div className="rounded-3xl border border-border/90 bg-card/95 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.5)] lg:col-span-5">
           <div className="space-y-4">
-            <div className="rounded-lg bg-background p-4">
-              <p className="text-xs uppercase tracking-wide text-muted">
+            <div className="rounded-2xl border border-border/90 bg-background p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
                 Best match
               </p>
-              <p className="mt-2 text-lg font-medium">
+              <p className="mt-2 text-lg font-semibold text-foreground">
                 Senior Backend Engineer
               </p>
               <p className="text-sm text-muted">
-                93% score • Remote • ACME Labs
+                93/100 score • Remote • ACME Labs
               </p>
             </div>
-            <div className="rounded-lg bg-background p-4">
-              <p className="text-xs uppercase tracking-wide text-muted">
-                Resume status
+            <div className="rounded-2xl border border-border/90 bg-background p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                Resume Pipeline
               </p>
-              <p className="mt-2 text-lg font-medium">2 parsed, 1 processing</p>
+              <p className="mt-2 text-lg font-semibold text-foreground">
+                2 indexed, 1 in processing
+              </p>
               <p className="text-sm text-muted">
-                Upload, parse, recommend in minutes
+                Upload, parse, and rank in minutes
               </p>
             </div>
-            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-foreground">
-              <p className="text-xs uppercase tracking-wide text-primary">
+            <div className="rounded-2xl border border-primary/30 bg-primary/10 p-4 text-foreground">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
                 Insight
               </p>
-              <p className="mt-2 text-sm text-foreground/85">
+              <p className="mt-2 text-sm text-foreground/90">
                 Skills relevance improved by 18% after profile enrichment.
               </p>
             </div>

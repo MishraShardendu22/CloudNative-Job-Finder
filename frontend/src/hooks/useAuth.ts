@@ -3,8 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { api } from "@/lib/api";
-import type { AuthPayload } from "@/types/user";
+import { ApiError, api } from "@/lib/api";
+import type { AuthPayload, ProfileUpdatePayload } from "@/types/user";
 
 function persistTokenCookie(token: string) {
   if (typeof document === "undefined") return;
@@ -51,9 +51,30 @@ export function useAuth() {
     },
   });
 
+  const updateProfileMutation = useMutation({
+    mutationFn: (payload: ProfileUpdatePayload) => api.updateProfile(payload),
+    onSuccess: () => {
+      toast.success("Profile updated");
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+    onError: (error) => {
+      if (
+        error instanceof ApiError &&
+        (error.status === 404 || error.status === 405)
+      ) {
+        toast.error(
+          "Profile edit API is unavailable. Restart backend services.",
+        );
+        return;
+      }
+      toast.error(error.message || "Unable to update profile");
+    },
+  });
+
   return {
     profileQuery,
     loginMutation,
     signupMutation,
+    updateProfileMutation,
   };
 }

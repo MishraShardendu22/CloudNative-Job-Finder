@@ -1,26 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f9fafb;
-  --foreground: #111827;
-  --card: #ffffff;
-  --border: #e5e7eb;
-  --muted: #6b7280;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --danger: #dc2626;
-  color-scheme: light;
-}
-
-.dark {
-  --background: #0b1220;
-  --foreground: #f3f4f6;
-  --card: #111827;
-  --border: #1f2937;
-  --muted: #9ca3af;
-  --primary: #60a5fa;
-  --primary-hover: #3b82f6;
-  --danger: #f87171;
+  --background: #080808;
+  --foreground: #fff8f0;
+  --card: #121212;
+  --border: #2a2a2a;
+  --muted: #b8ada1;
+  --primary: #f97316;
+  --primary-hover: #fb923c;
+  --danger: #ea580c;
   color-scheme: dark;
 }
 
@@ -37,11 +25,19 @@
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(
+      circle at 12% 12%,
+      rgba(249, 115, 22, 0.18),
+      transparent 34%
+    ),
+    radial-gradient(circle at 88% 0%, rgba(251, 146, 60, 0.12), transparent 26%),
+    var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), sans-serif;
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.6;
+  min-height: 100vh;
 }
 
 * {
@@ -61,21 +57,21 @@ select option {
 }
 
 h1 {
-  font-size: 32px;
+  font-size: 36px;
   line-height: 1.25;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 h2 {
   font-size: 24px;
   line-height: 1.3;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 h3 {
   font-size: 20px;
   line-height: 1.4;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 a,
