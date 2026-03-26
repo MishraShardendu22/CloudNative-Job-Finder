@@ -51,6 +51,66 @@ shared/
 docs/
 ```
 
+## Service Responsibilities
+
+- `api-gateway`: public API, JWT issue/validation, routing to internal services.
+- `user-service`: signup/login/profile persistence and email onboarding.
+- `resume-service`: resume upload/list/delete, MinIO object tracking, parsed keyword persistence.
+- `resume-parser`: asynchronous resume text extraction and keyword/job-title parsing.
+- `job-scraper`: fetch and normalize jobs from external remote-job sources.
+- `job-processor`: clean descriptions, extract job keywords, index jobs in Meilisearch.
+- `job-matcher`: BM25 scoring for resume-to-job ranking.
+- `recommendation-service`: paginated recommendations with Redis caching.
+- `scheduler`: cron orchestration plus immediate and weekly email notifications.
+
+See per-service documentation in [services/README.md](services/README.md).
+
+## End-to-End Workflow (How It Works)
+
+### 1. User Authentication and Profile
+
+1. Frontend calls `api-gateway` (`/signup` or `/login`).
+2. Gateway forwards request to `user-service`.
+3. On success, gateway issues JWT and returns user payload.
+4. Authenticated profile requests (`/profile`) are proxied through the gateway.
+
+### 2. Resume Ingestion Pipeline
+
+1. User uploads resume via gateway endpoint `/resume/upload`.
+2. Gateway forwards to `resume-service` with `X-User-ID`.
+3. `resume-service` stores file in MinIO and metadata in PostgreSQL.
+4. `resume-service` publishes `resume_uploaded` to RabbitMQ.
+5. `resume-parser` consumes `resume_uploaded`, downloads file, extracts structured data.
+6. `resume-parser` calls `resume-service` internal parsed endpoint.
+7. `resume-service` stores parsed keywords and publishes `resume_parsed`.
+
+### 3. Job Ingestion Pipeline
+
+1. `scheduler` triggers `job-scraper` periodically (`CRON_SCRAPE`) or manually.
+2. `job-scraper` fetches jobs from RemoteOK, WeWorkRemotely, and Hacker News.
+3. Jobs are upserted into PostgreSQL and each stored job emits `job_scraped`.
+4. `job-processor` consumes `job_scraped`, cleans text, extracts keywords.
+5. `job-processor` updates DB and indexes documents into Meilisearch.
+6. `job-processor` publishes `job_indexed`.
+
+### 4. Matching and Recommendation Pipeline
+
+1. `job-matcher` consumes `resume_parsed` and `job_indexed`.
+2. It computes BM25 scores between resume keywords and job corpus.
+3. Top matches are written to `resume_job_matches`.
+4. `job-matcher` publishes `job_matches_generated`.
+5. `recommendation-service` serves ranked results to gateway (with Redis caching).
+6. Frontend reads recommendations through `/recommendations/{resume_id}`.
+
+### 5. Notifications and Scheduled Jobs
+
+1. `scheduler` consumes `job_matches_generated` to send near-real-time match alerts.
+2. It also runs:
+
+- scrape cron (`CRON_SCRAPE`)
+- match-all cron (`CRON_MATCH`)
+- weekly summary emails (`CRON_WEEKLY_EMAIL`)
+
 ## Quick Start
 
 ### 1. Prerequisites
@@ -93,11 +153,11 @@ same terminal.
 
 ## Local URLs
 
-- Frontend: http://localhost:3000
-- API Gateway: http://localhost:8080
-- RabbitMQ UI: http://localhost:15672 (guest/guest)
-- MinIO Console: http://localhost:9001 (minioadmin/minioadmin)
-- Meilisearch: http://localhost:7700
+- Frontend: <http://localhost:3000>
+- API Gateway: <http://localhost:8080>
+- RabbitMQ UI: <http://localhost:15672> (guest/guest)
+- MinIO Console: <http://localhost:9001> (minioadmin/minioadmin)
+- Meilisearch: <http://localhost:7700>
 - Postgres: localhost:5432
 - Redis: localhost:6379
 

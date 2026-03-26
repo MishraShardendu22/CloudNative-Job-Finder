@@ -8,30 +8,41 @@ export function JobCard({ job }: { job: JobRecommendation }) {
   const score = Math.round(job.score);
 
   return (
-    <Card className="group">
-      <CardHeader className="space-y-2">
-        <div className="flex items-center justify-between gap-4">
-          <CardTitle className="text-base leading-snug">{job.title}</CardTitle>
-          <div className="rounded-lg border border-primary/40 bg-primary/10 px-2.5 py-1.5 text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">
+    <Card className="group h-full border-border/90 bg-card/95 transition-all duration-180 hover:border-primary/35 hover:shadow-[0_20px_45px_rgba(0,0,0,0.45)]">
+      <CardHeader className="space-y-3 pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <CardTitle className="line-clamp-3 text-[22px] leading-tight">
+            {job.title}
+          </CardTitle>
+          <div className="shrink-0 rounded-xl border border-primary/35 bg-primary/8 px-3 py-2 text-right">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">
               Match Score
             </p>
-            <p className="text-sm font-bold text-primary">{score}/100</p>
+            <p className="text-[30px] font-bold leading-none text-primary">
+              {score}
+            </p>
+            <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-muted">
+              out of 100
+            </p>
           </div>
         </div>
-        <p className="text-sm text-muted">{job.company}</p>
+        <p className="text-sm font-medium text-muted">{job.company}</p>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex flex-1 flex-col gap-4">
         <p className="flex items-center gap-1 text-sm text-muted">
           <MapPin className="h-4 w-4" />
           {job.location}
         </p>
         {job.summary ? (
-          <p className="text-sm leading-relaxed text-foreground/85">
+          <p className="line-clamp-3 text-sm leading-relaxed text-foreground/85">
             {job.summary}
           </p>
         ) : null}
-        <Button asChild size="sm" className="group-hover:translate-y-[-1px]">
+        <Button
+          asChild
+          size="sm"
+          className="mt-auto w-fit group-hover:translate-y-[-1px]"
+        >
           <Link href={job.apply_url} target="_blank" rel="noreferrer">
             Apply
             <ExternalLink className="h-4 w-4" />

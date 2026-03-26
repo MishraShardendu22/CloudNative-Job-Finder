@@ -65,16 +65,16 @@ export function JobTable({ data }: JobTableProps) {
 
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/95">
+      <div className="overflow-hidden rounded-2xl border border-border/80 bg-background/70">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] border-collapse text-sm">
-            <thead className="bg-background/80 text-left">
+          <table className="w-full min-w-[760px] border-collapse text-sm">
+            <thead className="bg-card/80 text-left">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted"
+                      className="px-5 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted"
                     >
                       {header.isPlaceholder
                         ? null
@@ -101,12 +101,12 @@ export function JobTable({ data }: JobTableProps) {
                 table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="border-t border-border/80 transition-colors duration-180 hover:bg-background/90"
+                    className="border-t border-border/80 transition-colors duration-180 hover:bg-card/70"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
-                        className="px-4 py-3 text-foreground/90"
+                        className="px-5 py-3 text-foreground/90"
                       >
                         {flexRender(
                           cell.column.columnDef.cell,

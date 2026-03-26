@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronDown, FileText } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { JobCard } from "@/components/job-card";
@@ -33,34 +34,53 @@ export default function RecommendationsPage() {
       description="Evaluate ranked opportunities for each resume with standardized match scoring."
     >
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Select Resume</CardTitle>
-            <CardDescription>Choose which resume to analyze.</CardDescription>
+        <Card className="relative overflow-hidden">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 rounded-full bg-primary/10 blur-3xl" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              Select Resume
+            </CardTitle>
+            <CardDescription>
+              Choose which resume to analyze and rank against active roles.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="max-w-md space-y-2">
-            <Label htmlFor="resume-select">Resume</Label>
-            <select
-              id="resume-select"
-              className="h-11 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground outline-none transition-colors duration-180 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
-              value={selectedResumeId ?? ""}
-              onChange={(event) => setResumeId(event.target.value || null)}
+          <CardContent className="max-w-lg space-y-2">
+            <Label
+              htmlFor="resume-select"
+              className="text-xs uppercase tracking-[0.14em] text-muted"
             >
-              {(resumesQuery.data?.length ?? 0) === 0 ? (
-                <option value="" className="text-foreground">
-                  No resumes available
-                </option>
-              ) : null}
-              {(resumesQuery.data ?? []).map((resume) => (
-                <option
-                  key={resume.id}
-                  value={resume.id}
-                  className="text-foreground"
-                >
-                  {resume.filename || `Resume ${resume.id.slice(0, 8)}`}
-                </option>
-              ))}
-            </select>
+              Resume
+            </Label>
+            <div className="relative">
+              <select
+                id="resume-select"
+                className="h-12 w-full appearance-none rounded-xl border border-border bg-background pl-3 pr-10 text-sm font-medium text-foreground outline-none transition-colors duration-180 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+                value={selectedResumeId ?? ""}
+                onChange={(event) => setResumeId(event.target.value || null)}
+              >
+                {(resumesQuery.data?.length ?? 0) === 0 ? (
+                  <option value="" className="text-foreground">
+                    No resumes available
+                  </option>
+                ) : null}
+                {(resumesQuery.data ?? []).map((resume) => (
+                  <option
+                    key={resume.id}
+                    value={resume.id}
+                    className="text-foreground"
+                  >
+                    {resume.filename || `Resume ${resume.id.slice(0, 8)}`}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+            </div>
+            <p className="text-xs text-muted">
+              {jobs.length > 0
+                ? `${jobs.length} ranked roles available for this resume.`
+                : "No ranked roles yet for this resume."}
+            </p>
           </CardContent>
         </Card>
 
@@ -83,11 +103,27 @@ export default function RecommendationsPage() {
           </Card>
         ) : (
           <>
-            <JobTable data={jobs} />
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {jobs.slice(0, 6).map((job) => (
-                <JobCard key={job.id} job={job} />
-              ))}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Ranked Opportunities</CardTitle>
+                <CardDescription>
+                  Sorted recommendations with normalized match scores.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <JobTable data={jobs} />
+              </CardContent>
+            </Card>
+
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                Top Matches
+              </p>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {jobs.slice(0, 6).map((job) => (
+                  <JobCard key={job.id} job={job} />
+                ))}
+              </div>
             </div>
           </>
         )}
