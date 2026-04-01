@@ -70,9 +70,7 @@ services:
       - jobfinder-net
 
   api-gateway:
-    build:
-      context: ..
-      dockerfile: services/api-gateway/Dockerfile
+    image: shardendumishra22/api-gateway
     container_name: jobfinder-api-gateway
     env_file:
       - ../.env
@@ -89,9 +87,7 @@ services:
       - jobfinder-net
 
   user-service:
-    build:
-      context: ..
-      dockerfile: services/user-service/Dockerfile
+    image: shardendumishra22/user-service
     container_name: jobfinder-user-service
     env_file:
       - ../.env
@@ -102,9 +98,7 @@ services:
       - jobfinder-net
 
   resume-service:
-    build:
-      context: ..
-      dockerfile: services/resume-service/Dockerfile
+    image: shardendumishra22/resume-service
     container_name: jobfinder-resume-service
     env_file:
       - ../.env
@@ -119,9 +113,7 @@ services:
       - jobfinder-net
 
   resume-parser:
-    build:
-      context: ..
-      dockerfile: services/resume-parser/Dockerfile
+    image: shardendumishra22/resume-parser
     container_name: jobfinder-resume-parser
     env_file:
       - ../.env
@@ -136,9 +128,7 @@ services:
       - jobfinder-net
 
   job-scraper:
-    build:
-      context: ..
-      dockerfile: services/job-scraper/Dockerfile
+    image: shardendumishra22/job-scraper
     container_name: jobfinder-job-scraper
     env_file:
       - ../.env
@@ -151,9 +141,7 @@ services:
       - jobfinder-net
 
   job-processor:
-    build:
-      context: ..
-      dockerfile: services/job-processor/Dockerfile
+    image: shardendumishra22/job-processor
     container_name: jobfinder-job-processor
     env_file:
       - ../.env
@@ -168,9 +156,7 @@ services:
       - jobfinder-net
 
   job-matcher:
-    build:
-      context: ..
-      dockerfile: services/job-matcher/Dockerfile
+    image: shardendumishra22/job-matcher
     container_name: jobfinder-job-matcher
     env_file:
       - ../.env
@@ -183,9 +169,7 @@ services:
       - jobfinder-net
 
   recommendation-service:
-    build:
-      context: ..
-      dockerfile: services/recommendation-service/Dockerfile
+    image: shardendumishra22/recommendation-service
     container_name: jobfinder-recommendation-service
     env_file:
       - ../.env
@@ -198,9 +182,7 @@ services:
       - jobfinder-net
 
   scheduler:
-    build:
-      context: ..
-      dockerfile: services/scheduler/Dockerfile
+    image: shardendumishra22/scheduler
     container_name: jobfinder-scheduler
     env_file:
       - ../.env
@@ -217,9 +199,7 @@ services:
       - jobfinder-net
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: shardendumishra22/frontend
     container_name: jobfinder-frontend
     env_file:
       - ../.env
