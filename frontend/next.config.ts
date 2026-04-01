@@ -2,7 +2,7 @@ import path from "node:path";
 import type { NextConfig } from "next";
 
 const apiGatewayURL =
-  process.env.API_GATEWAY_INTERNAL_URL ?? "http://localhost:8080";
+  process.env.API_GATEWAY_INTERNAL_URL ?? "http://api-gateway:8080";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
