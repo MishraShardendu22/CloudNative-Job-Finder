@@ -1,6 +1,9 @@
 import path from "node:path";
 import type { NextConfig } from "next";
 
+const apiGatewayURL =
+  process.env.API_GATEWAY_INTERNAL_URL ?? "http://localhost:8080";
+
 const nextConfig: NextConfig = {
   reactCompiler: true,
   turbopack: {
@@ -10,7 +13,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:8080/:path*",
+        destination: `${apiGatewayURL}/:path*`,
       },
     ];
   },
