@@ -9,15 +9,43 @@ import {
 } from "@tanstack/react-table";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import type { JobRecommendation } from "@/types/job";
+import { api } from "@/lib/api";
+import type { JobInteractionType, JobRecommendation } from "@/types/job";
 
 type JobTableProps = {
   data: JobRecommendation[];
+  resumeId: string | null;
 };
 
-export function JobTable({ data }: JobTableProps) {
+export function JobTable({ data, resumeId }: JobTableProps) {
+  const trackedImpressions = useRef<Set<string>>(new Set());
+
+  const trackInteraction = (
+    jobId: string,
+    interactionType: JobInteractionType,
+  ) => {
+    if (!resumeId) return;
+
+    void api.trackInteraction({
+      resume_id: resumeId,
+      job_id: jobId,
+      interaction_type: interactionType,
+      source: "job-table",
+    });
+  };
+
+  useEffect(() => {
+    if (!resumeId) return;
+
+    for (const job of data) {
+      if (trackedImpressions.current.has(job.id)) continue;
+      trackedImpressions.current.add(job.id);
+      trackInteraction(job.id, "impression");
+    }
+  }, [data, resumeId]);
+
   const columns = useMemo<ColumnDef<JobRecommendation>[]>(
     () => [
       {
@@ -46,6 +74,10 @@ export function JobTable({ data }: JobTableProps) {
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-hover"
+            onClick={(event) => {
+              event.stopPropagation();
+              trackInteraction(row.original.id, "apply");
+            }}
           >
             Link
             <ExternalLink className="h-3 w-3" />
@@ -53,7 +85,7 @@ export function JobTable({ data }: JobTableProps) {
         ),
       },
     ],
-    [],
+    [resumeId],
   );
 
   const table = useReactTable({
@@ -101,6 +133,7 @@ export function JobTable({ data }: JobTableProps) {
                 table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
+                    onClick={() => trackInteraction(row.original.id, "click")}
                     className="border-t border-border/80 transition-colors duration-180 hover:bg-card/70"
                   >
                     {row.getVisibleCells().map((cell) => (

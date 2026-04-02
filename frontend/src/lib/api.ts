@@ -1,4 +1,7 @@
-import type { RecommendationResponse } from "@/types/job";
+import type {
+  JobInteractionPayload,
+  RecommendationResponse,
+} from "@/types/job";
 import type { Resume, ResumeUploadResponse } from "@/types/resume";
 import type { AuthPayload, ProfileUpdatePayload, User } from "@/types/user";
 
@@ -278,4 +281,10 @@ export const api = {
     request<unknown>(`/recommendations/${resumeId}`).then(
       normalizeRecommendationsResponse,
     ),
+
+  trackInteraction: (payload: JobInteractionPayload) =>
+    request<{ status: string }>("/interactions", {
+      method: "POST",
+      body: payload,
+    }),
 };

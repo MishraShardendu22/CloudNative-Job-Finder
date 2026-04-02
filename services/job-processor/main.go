@@ -9,7 +9,9 @@ import (
 	"job-finder/shared/config"
 	"job-finder/shared/db"
 	"job-finder/shared/events"
+	"job-finder/shared/observability"
 	"job-finder/shared/queue"
+	"job-finder/shared/stream"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/meilisearch/meilisearch-go"
@@ -18,8 +20,12 @@ import (
 type app struct {
 	pool          *pgxpool.Pool
 	queue         *queue.Client
+	stream        *stream.Client
 	meili         meilisearch.ServiceManager
 	internalToken string
+	consumerGroup string
+	jobsTopic     string
+	telemetry     *observability.Telemetry
 }
 
 func main() {
@@ -33,14 +39,37 @@ func main() {
 	}
 	defer pool.Close()
 
-	queueClient, err := queue.NewClient(
-		config.GetEnv("RABBITMQ_URL", "amqp://guest:guest@rabbitmq:5672/"),
-		config.GetEnv("RABBITMQ_EXCHANGE", "events"),
-	)
-	if err != nil {
-		log.Fatalf("rabbitmq connect failed: %v", err)
+	enableKafkaConsumers := config.GetBool("ENABLE_KAFKA_CONSUMERS", true)
+	enableRabbitConsumers := config.GetBool("ENABLE_RABBITMQ_CONSUMERS", true)
+	consumerGroup := config.GetEnv("JOB_PROCESSOR_CONSUMER_GROUP", "job-processor.v1")
+	jobsTopic := config.GetEnv("KAFKA_TOPIC_JOBS_SCRAPED", events.TopicJobsScrapedV1)
+
+	telemetry := observability.New("job-processor")
+
+	var queueClient *queue.Client
+	if enableRabbitConsumers {
+		queueClient, err = queue.NewClient(
+			config.GetEnv("RABBITMQ_URL", "amqp://guest:guest@rabbitmq:5672/"),
+			config.GetEnv("RABBITMQ_EXCHANGE", "events"),
+		)
+		if err != nil {
+			log.Fatalf("rabbitmq connect failed: %v", err)
+		}
+		defer queueClient.Close()
 	}
-	defer queueClient.Close()
+
+	var streamClient *stream.Client
+	if enableKafkaConsumers {
+		streamClient, err = stream.NewClient(
+			config.GetEnv("KAFKA_BROKERS", "kafka:9092"),
+			config.GetEnv("KAFKA_CLIENT_ID", "jobfinder")+"-job-processor",
+		)
+		if err != nil {
+			log.Fatalf("kafka connect failed: %v", err)
+		}
+		streamClient.SetDLQPrefix(config.GetEnv("KAFKA_TOPIC_DLQ_PREFIX", events.TopicDLQPrefixDefault))
+		defer streamClient.Close()
+	}
 
 	meiliClient := meilisearch.New(
 		config.GetEnv("MEILI_HOST", "http://meilisearch:7700"),
@@ -50,16 +79,27 @@ func main() {
 	a := &app{
 		pool:          pool,
 		queue:         queueClient,
+		stream:        streamClient,
 		meili:         meiliClient,
 		internalToken: config.GetEnv("INTERNAL_API_TOKEN", "internal-secret"),
+		consumerGroup: consumerGroup,
+		jobsTopic:     jobsTopic,
+		telemetry:     telemetry,
 	}
 
 	if err := a.ensureIndex(ctx); err != nil {
 		log.Printf("meilisearch index setup warning: %v", err)
 	}
 
-	if err := queueClient.Subscribe(ctx, "job-processor.queue", []string{events.EventJobScraped}, a.handleEvent); err != nil {
-		log.Fatalf("subscribe failed: %v", err)
+	if enableRabbitConsumers && queueClient != nil {
+		if err := queueClient.Subscribe(ctx, "job-processor.queue", []string{events.EventJobScraped}, a.handleRabbitEvent); err != nil {
+			log.Fatalf("rabbit subscribe failed: %v", err)
+		}
+	}
+	if enableKafkaConsumers && streamClient != nil {
+		if err := streamClient.Subscribe(ctx, consumerGroup, []string{jobsTopic}, a.handleKafkaEvent); err != nil {
+			log.Fatalf("kafka subscribe failed: %v", err)
+		}
 	}
 
 	mux := http.NewServeMux()
@@ -69,7 +109,7 @@ func main() {
 	server := &http.Server{
 		Addr:              ":" + port,
 		ReadHeaderTimeout: 10 * time.Second,
-		Handler:           mux,
+		Handler:           telemetry.Middleware(mux),
 	}
 
 	log.Printf("job-processor listening on :%s", port)

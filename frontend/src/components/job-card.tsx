@@ -1,14 +1,60 @@
+"use client";
+
 import { ExternalLink, MapPin } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { JobRecommendation } from "@/types/job";
+import { api } from "@/lib/api";
+import type { JobInteractionType, JobRecommendation } from "@/types/job";
 
-export function JobCard({ job }: { job: JobRecommendation }) {
+type JobCardProps = {
+  job: JobRecommendation;
+  resumeId: string | null;
+};
+
+export function JobCard({ job, resumeId }: JobCardProps) {
   const score = Math.round(job.score);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const hasTrackedImpression = useRef(false);
+
+  const trackInteraction = (interactionType: JobInteractionType) => {
+    if (!resumeId) return;
+
+    void api.trackInteraction({
+      resume_id: resumeId,
+      job_id: job.id,
+      interaction_type: interactionType,
+      source: "job-card",
+    });
+  };
+
+  useEffect(() => {
+    if (!resumeId || hasTrackedImpression.current || !cardRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting || hasTrackedImpression.current) continue;
+          hasTrackedImpression.current = true;
+          trackInteraction("impression");
+          observer.disconnect();
+          break;
+        }
+      },
+      { threshold: 0.6 },
+    );
+
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, [job.id, resumeId]);
 
   return (
-    <Card className="group h-full border-border/90 bg-card/95 transition-all duration-180 hover:border-primary/35 hover:shadow-[0_20px_45px_rgba(0,0,0,0.45)]">
+    <Card
+      ref={cardRef}
+      onClick={() => trackInteraction("click")}
+      className="group h-full border-border/90 bg-card/95 transition-all duration-180 hover:border-primary/35 hover:shadow-[0_20px_45px_rgba(0,0,0,0.45)]"
+    >
       <CardHeader className="space-y-3 pb-3">
         <div className="flex items-start justify-between gap-3">
           <CardTitle className="line-clamp-3 text-[22px] leading-tight">
@@ -43,7 +89,15 @@ export function JobCard({ job }: { job: JobRecommendation }) {
           size="sm"
           className="mt-auto w-fit group-hover:translate-y-[-1px]"
         >
-          <Link href={job.apply_url} target="_blank" rel="noreferrer">
+          <Link
+            href={job.apply_url}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(event) => {
+              event.stopPropagation();
+              trackInteraction("apply");
+            }}
+          >
             Apply
             <ExternalLink className="h-4 w-4" />
           </Link>

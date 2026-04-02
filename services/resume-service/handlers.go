@@ -11,7 +11,9 @@ import (
 	"job-finder/shared/events"
 	"job-finder/shared/httpx"
 	"job-finder/shared/models"
+	"job-finder/shared/outbox"
 	sharedtext "job-finder/shared/text"
+	"job-finder/shared/workflow"
 
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
@@ -83,6 +85,9 @@ func (a *app) handleUpload(w http.ResponseWriter, r *http.Request) {
 	}
 	resume.FileURL = fileURL
 	resume.ParsedKeyword = []string{}
+	if err := workflow.UpsertState(r.Context(), a.pool, resume.ID, userID, workflow.StateUploaded, ""); err != nil {
+		log.Printf("workflow uploaded upsert failed: %v", err)
+	}
 
 	event := events.ResumeUploadedEvent{
 		ResumeID:   resume.ID,
@@ -92,8 +97,11 @@ func (a *app) handleUpload(w http.ResponseWriter, r *http.Request) {
 		FileURL:    fileURL,
 		UploadedAt: time.Now().UTC(),
 	}
-	if err := a.queue.Publish(r.Context(), events.EventResumeUploaded, event); err != nil {
-		log.Printf("resume_uploaded publish failed: %v", err)
+	eventID, err := outbox.Insert(r.Context(), a.pool, events.EventResumeUploaded, event)
+	if err != nil {
+		log.Printf("enqueue resume_uploaded failed: %v", err)
+	} else if err := workflow.UpsertState(r.Context(), a.pool, resume.ID, userID, workflow.StateUploaded, eventID); err != nil {
+		log.Printf("workflow uploaded update failed: %v", err)
 	}
 
 	httpx.WriteJSON(w, http.StatusCreated, resume)
@@ -222,8 +230,12 @@ func (a *app) handleUpdateParsed(w http.ResponseWriter, r *http.Request) {
 		Keywords: allKeywords,
 		ParsedAt: time.Now().UTC(),
 	}
-	if err := a.queue.Publish(r.Context(), events.EventResumeParsed, event); err != nil {
-		log.Printf("resume_parsed publish failed: %v", err)
+	eventID, err := outbox.Insert(r.Context(), a.pool, events.EventResumeParsed, event)
+	if err != nil {
+		log.Printf("enqueue resume_parsed failed: %v", err)
+		_ = workflow.MarkFailure(r.Context(), a.pool, resumeID, userID, "", err.Error(), 3)
+	} else if err := workflow.UpsertState(r.Context(), a.pool, resumeID, userID, workflow.StateParsed, eventID); err != nil {
+		log.Printf("workflow parsed update failed: %v", err)
 	}
 
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"resume_id": resumeID, "keywords": allKeywords})

@@ -9,7 +9,7 @@ import (
 
 	"job-finder/shared/config"
 	"job-finder/shared/db"
-	"job-finder/shared/queue"
+	"job-finder/shared/observability"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/minio/minio-go/v7"
@@ -22,8 +22,8 @@ type app struct {
 	pool          *pgxpool.Pool
 	minio         *minio.Client
 	bucket        string
-	queue         *queue.Client
 	internalToken string
+	telemetry     *observability.Telemetry
 }
 
 type parsedPayload struct {
@@ -62,21 +62,14 @@ func main() {
 		log.Fatalf("ensure bucket failed: %v", err)
 	}
 
-	queueClient, err := queue.NewClient(
-		config.GetEnv("RABBITMQ_URL", "amqp://guest:guest@rabbitmq:5672/"),
-		config.GetEnv("RABBITMQ_EXCHANGE", "events"),
-	)
-	if err != nil {
-		log.Fatalf("rabbitmq connect failed: %v", err)
-	}
-	defer queueClient.Close()
+	telemetry := observability.New("resume-service")
 
 	a := &app{
 		pool:          pool,
 		minio:         minioClient,
 		bucket:        bucket,
-		queue:         queueClient,
 		internalToken: config.GetEnv("INTERNAL_API_TOKEN", "internal-secret"),
+		telemetry:     telemetry,
 	}
 
 	mux := http.NewServeMux()
@@ -89,7 +82,7 @@ func main() {
 	server := &http.Server{
 		Addr:              ":" + port,
 		ReadHeaderTimeout: 10 * time.Second,
-		Handler:           mux,
+		Handler:           telemetry.Middleware(mux),
 	}
 
 	log.Printf("resume-service listening on :%s", port)

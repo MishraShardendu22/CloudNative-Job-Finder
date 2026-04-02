@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"job-finder/shared/httpx"
+	"job-finder/shared/observability"
 )
 
 func (a *app) sendJSON(ctx context.Context, method, url string, payload any, headers map[string]string) (int, []byte, error) {
@@ -22,6 +23,9 @@ func (a *app) sendJSON(ctx context.Context, method, url string, payload any, hea
 		return 0, nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	if traceID := observability.TraceIDFromContext(ctx); traceID != "" {
+		req.Header.Set(observability.TraceIDHeader, traceID)
+	}
 	for key, value := range headers {
 		req.Header.Set(key, value)
 	}
@@ -52,6 +56,9 @@ func (a *app) proxyWithHeaders(w http.ResponseWriter, r *http.Request, target st
 	}
 	if contentType := r.Header.Get("Content-Type"); contentType != "" {
 		req.Header.Set("Content-Type", contentType)
+	}
+	if traceID := observability.TraceIDFromContext(r.Context()); traceID != "" {
+		req.Header.Set(observability.TraceIDHeader, traceID)
 	}
 	for key, value := range headers {
 		req.Header.Set(key, value)

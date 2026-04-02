@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	"job-finder/shared/httpx"
 	"job-finder/shared/models"
 	"job-finder/shared/utils"
+	"job-finder/shared/workflow"
 )
 
 func (a *app) handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -65,12 +67,20 @@ func (a *app) handleRecommendations(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := a.pool.Query(r.Context(), `
-		SELECT j.id, j.title, j.company, j.location, j.url, j.keywords, m.score
+		SELECT j.id, j.title, j.company, j.location, j.url, j.keywords,
+			(
+				0.70 * m.score +
+				20 * COALESCE(uf.affinity_score, 0) +
+				5 * COALESCE(uf.ctr, 0) +
+				5 * EXP(-GREATEST(EXTRACT(EPOCH FROM (NOW() - j.created_at)) / 86400.0, 0) / 30.0)
+			) AS rank_score
 		FROM resume_job_matches m
 		JOIN jobs j ON j.id = m.job_id
 		JOIN resumes r ON r.id = m.resume_id
+		LEFT JOIN user_job_features uf
+			ON uf.user_id = r.user_id AND uf.resume_id = m.resume_id AND uf.job_id = m.job_id
 		WHERE m.resume_id = $1 AND r.user_id = $2
-		ORDER BY m.score DESC
+		ORDER BY rank_score DESC
 		LIMIT $3 OFFSET $4
 	`, resumeID, userID, limit, offset)
 	if err != nil {
@@ -97,6 +107,10 @@ func (a *app) handleRecommendations(w http.ResponseWriter, r *http.Request) {
 		Limit:    limit,
 		Offset:   offset,
 		Items:    items,
+	}
+
+	if err := workflow.UpsertState(r.Context(), a.pool, resumeID, userID, workflow.StateRecommended, ""); err != nil {
+		log.Printf("workflow recommended update failed: %v", err)
 	}
 
 	if payload, err := json.Marshal(response); err == nil {

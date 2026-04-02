@@ -8,17 +8,17 @@ import (
 
 	"job-finder/shared/config"
 	"job-finder/shared/db"
-	"job-finder/shared/queue"
+	"job-finder/shared/observability"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type app struct {
 	pool          *pgxpool.Pool
-	queue         *queue.Client
 	httpClient    *http.Client
 	sources       []JobSource
 	internalToken string
+	telemetry     *observability.Telemetry
 }
 
 type scrapeSummary struct {
@@ -38,20 +38,12 @@ func main() {
 	}
 	defer pool.Close()
 
-	queueClient, err := queue.NewClient(
-		config.GetEnv("RABBITMQ_URL", "amqp://guest:guest@rabbitmq:5672/"),
-		config.GetEnv("RABBITMQ_EXCHANGE", "events"),
-	)
-	if err != nil {
-		log.Fatalf("rabbitmq connect failed: %v", err)
-	}
-	defer queueClient.Close()
+	telemetry := observability.New("job-scraper")
 
 	httpClient := &http.Client{Timeout: config.GetDuration("SCRAPER_TIMEOUT", 20*time.Second)}
 
 	a := &app{
 		pool:       pool,
-		queue:      queueClient,
 		httpClient: httpClient,
 		sources: []JobSource{
 			NewRemoteOKSource(httpClient),
@@ -59,6 +51,7 @@ func main() {
 			NewHackerNewsSource(httpClient),
 		},
 		internalToken: config.GetEnv("INTERNAL_API_TOKEN", "internal-secret"),
+		telemetry:     telemetry,
 	}
 
 	mux := http.NewServeMux()
@@ -68,7 +61,7 @@ func main() {
 	server := &http.Server{
 		Addr:              ":" + port,
 		ReadHeaderTimeout: 10 * time.Second,
-		Handler:           mux,
+		Handler:           telemetry.Middleware(mux),
 	}
 
 	log.Printf("job-scraper listening on :%s", port)

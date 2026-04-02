@@ -9,6 +9,7 @@ import (
 	"job-finder/shared/config"
 	"job-finder/shared/db"
 	"job-finder/shared/email"
+	"job-finder/shared/observability"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -37,6 +38,7 @@ func main() {
 	)
 
 	a := &app{pool: pool, emailClient: emailClient}
+	telemetry := observability.New("user-service")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", a.handleHealth)
@@ -48,7 +50,7 @@ func main() {
 	server := &http.Server{
 		Addr:              ":" + port,
 		ReadHeaderTimeout: 10 * time.Second,
-		Handler:           mux,
+		Handler:           telemetry.Middleware(mux),
 	}
 
 	log.Printf("user-service listening on :%s", port)

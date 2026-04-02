@@ -43,6 +43,49 @@ services:
     networks:
       - jobfinder-net
 
+  zookeeper:
+    image: bitnami/zookeeper:3.9
+    container_name: jobfinder-zookeeper
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+    networks:
+      - jobfinder-net
+
+  kafka:
+    image: bitnami/kafka:3.7
+    container_name: jobfinder-kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+    depends_on:
+      zookeeper:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "sh", "-c", "kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - jobfinder-net
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: jobfinder-kafka-ui
+    environment:
+      KAFKA_CLUSTERS_0_NAME: jobfinder
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    ports:
+      - "8089:8080"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - jobfinder-net
+
   minio:
     image: minio/minio:RELEASE.2025-02-18T16-25-55Z
     container_name: jobfinder-minio
@@ -83,6 +126,8 @@ services:
         condition: service_started
       recommendation-service:
         condition: service_started
+      kafka:
+        condition: service_healthy
     networks:
       - jobfinder-net
 
@@ -150,6 +195,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
       meilisearch:
         condition: service_started
     networks:
@@ -164,6 +211,8 @@ services:
       postgres:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - jobfinder-net
@@ -191,10 +240,50 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
       job-scraper:
         condition: service_started
       job-matcher:
         condition: service_started
+    networks:
+      - jobfinder-net
+
+  outbox-relay:
+    build:
+      context: ..
+      dockerfile: services/outbox-relay/Dockerfile
+    image: shardendumishra22/outbox-relay
+    container_name: jobfinder-outbox-relay
+    env_file:
+      - ../.env
+    environment:
+      PORT: ${OUTBOX_RELAY_PORT:-8091}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - jobfinder-net
+
+  feature-aggregator:
+    build:
+      context: ..
+      dockerfile: services/feature-aggregator/Dockerfile
+    image: shardendumishra22/feature-aggregator
+    container_name: jobfinder-feature-aggregator
+    env_file:
+      - ../.env
+    environment:
+      PORT: ${FEATURE_AGGREGATOR_PORT:-8092}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
     networks:
       - jobfinder-net
 

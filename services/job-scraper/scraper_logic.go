@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"job-finder/shared/events"
+	"job-finder/shared/outbox"
 )
 
 func (a *app) scrapeAndStore(ctx context.Context) scrapeSummary {
@@ -55,8 +56,8 @@ func (a *app) scrapeAndStore(ctx context.Context) scrapeSummary {
 			summary.Stored++
 
 			event := events.JobScrapedEvent{JobID: jobID, Source: job.Source, ScrapedAt: time.Now().UTC()}
-			if err := a.queue.Publish(ctx, events.EventJobScraped, event); err != nil {
-				log.Printf("publish job_scraped failed: %v", err)
+			if _, err := outbox.Insert(ctx, a.pool, events.EventJobScraped, event); err != nil {
+				log.Printf("enqueue job_scraped failed: %v", err)
 			}
 		}
 	}

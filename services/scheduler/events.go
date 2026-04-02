@@ -7,15 +7,41 @@ import (
 	"time"
 
 	"job-finder/shared/events"
+	"job-finder/shared/idempotency"
 	"job-finder/shared/queue"
+	"job-finder/shared/stream"
 )
 
-func (a *app) handleEvent(routingKey string, body []byte) error {
+func (a *app) handleRabbitEvent(routingKey string, body []byte) error {
 	if routingKey != events.EventJobMatchesGenerated {
 		return nil
 	}
 	var event events.JobMatchesGeneratedEvent
 	if err := queue.Decode(body, &event); err != nil {
+		return err
+	}
+	if event.MatchCount == 0 {
+		return nil
+	}
+
+	return a.sendNewMatchNotification(context.Background(), event.ResumeID, event.UserID, event.MatchCount)
+}
+
+func (a *app) handleKafkaEvent(topic string, body []byte, headers map[string]string) error {
+	if topic != a.matchesTopic {
+		return nil
+	}
+
+	isNew, err := idempotency.MarkIfNew(context.Background(), a.pool, headers["event_id"], a.consumerGroup)
+	if err != nil {
+		return err
+	}
+	if !isNew {
+		return nil
+	}
+
+	var event events.JobMatchesGeneratedEvent
+	if err := stream.Decode(body, &event); err != nil {
 		return err
 	}
 	if event.MatchCount == 0 {

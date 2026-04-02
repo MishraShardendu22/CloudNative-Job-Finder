@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"job-finder/shared/events"
+	"job-finder/shared/outbox"
 	sharedtext "job-finder/shared/text"
 
 	"github.com/jackc/pgx/v5"
@@ -55,8 +56,8 @@ func (a *app) processJob(ctx context.Context, jobID string) error {
 	}
 
 	indexedEvent := events.JobIndexedEvent{JobID: jobID, IndexedAt: time.Now().UTC()}
-	if err := a.queue.Publish(ctx, events.EventJobIndexed, indexedEvent); err != nil {
-		log.Printf("publish job_indexed failed: %v", err)
+	if _, err := outbox.Insert(ctx, a.pool, events.EventJobIndexed, indexedEvent); err != nil {
+		log.Printf("enqueue job_indexed failed: %v", err)
 	}
 
 	return nil

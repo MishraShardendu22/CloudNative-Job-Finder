@@ -8,15 +8,17 @@ import (
 
 	"job-finder/shared/config"
 	"job-finder/shared/db"
+	"job-finder/shared/observability"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 )
 
 type app struct {
-	pool     *pgxpool.Pool
-	redis    *redis.Client
-	cacheTTL time.Duration
+	pool      *pgxpool.Pool
+	redis     *redis.Client
+	cacheTTL  time.Duration
+	telemetry *observability.Telemetry
 }
 
 func main() {
@@ -40,10 +42,13 @@ func main() {
 	}
 	defer redisClient.Close()
 
+	telemetry := observability.New("recommendation-service")
+
 	a := &app{
-		pool:     pool,
-		redis:    redisClient,
-		cacheTTL: config.GetDuration("CACHE_TTL", 2*time.Minute),
+		pool:      pool,
+		redis:     redisClient,
+		cacheTTL:  config.GetDuration("CACHE_TTL", 2*time.Minute),
+		telemetry: telemetry,
 	}
 
 	mux := http.NewServeMux()
@@ -53,7 +58,7 @@ func main() {
 	server := &http.Server{
 		Addr:              ":" + port,
 		ReadHeaderTimeout: 10 * time.Second,
-		Handler:           mux,
+		Handler:           telemetry.Middleware(mux),
 	}
 
 	log.Printf("recommendation-service listening on :%s", port)

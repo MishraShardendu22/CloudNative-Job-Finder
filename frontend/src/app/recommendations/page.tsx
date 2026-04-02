@@ -111,7 +111,7 @@ export default function RecommendationsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <JobTable data={jobs} />
+                <JobTable data={jobs} resumeId={selectedResumeId} />
               </CardContent>
             </Card>
 
@@ -121,7 +121,11 @@ export default function RecommendationsPage() {
               </p>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {jobs.slice(0, 6).map((job) => (
-                  <JobCard key={job.id} job={job} />
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    resumeId={selectedResumeId}
+                  />
                 ))}
               </div>
             </div>
