@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2026.3.22)  3 APR 2026 21:17
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2026.3.22)  3 APR 2026 22:39
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -349,7 +349,7 @@ File: l3backend-pdftex.def 2023-01-16 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count289
 \l__pdf_internal_box=\box55
 )
-No file Report.aux.
+(./Report.aux)
 \openout1 = `Report.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 7.
@@ -370,6 +370,7 @@ LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 7.
 LaTeX Font Info:    ... okay on input line 7.
 LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 7.
 LaTeX Font Info:    ... okay on input line 7.
+
 -- Lines per column: 56 (exact).
 (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -394,40 +395,42 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 Package hyperref Info: Link coloring OFF on input line 7.
+
+(./Report.out) (./Report.out)
 \@outlinefile=\write3
 \openout3 = `Report.out'.
 
 
-Underfull \hbox (badness 2538) in paragraph at lines 37--39
+Underfull \hbox (badness 2538) in paragraph at lines 41--43
 []\OT1/ptm/b/it/9 Index Terms\OT1/ptm/b/n/9 ---cloud-native sys-tems, mi-croser
 -vices, event-
  []
 
-<architecture.png, id=5, 1027.84pt x 811.03pt>
+<architecture.png, id=97, 1027.84pt x 811.03pt>
 File: architecture.png Graphic file (type png)
 <use architecture.png>
-Package pdftex.def Info: architecture.png  used on input line 56.
+Package pdftex.def Info: architecture.png  used on input line 60.
 (pdftex.def)             Requested size: 232.19843pt x 183.21638pt.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 6
-9.
+LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 7
+3.
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 )
-Underfull \hbox (badness 2961) in paragraph at lines 69--70
+Underfull \hbox (badness 2961) in paragraph at lines 73--74
 []\OT1/ptm/b/n/10 api-gateway \OT1/ptm/m/n/10 han-dles JWT is-suance/validation
 , re-quest
  []
 
 
-Underfull \hbox (badness 2057) in paragraph at lines 69--70
+Underfull \hbox (badness 2057) in paragraph at lines 73--74
 \OT1/ptm/m/n/10 owns re-sume meta-data/object keys and parsed key-word
  []
 
 
-Underfull \hbox (badness 3138) in paragraph at lines 69--70
+Underfull \hbox (badness 3138) in paragraph at lines 73--74
 \OT1/ptm/m/n/10 up-dates; \OT1/ptm/b/n/10 resume-parser \OT1/ptm/m/n/10 con-sum
 es \OT1/pcr/m/n/10 resume_uploaded\OT1/ptm/m/n/10 ,
  []
@@ -437,49 +440,49 @@ dist/fonts/enc/dvips/base/8r.enc}
 
 
  <./architecture.png (PNG copy)>]
-Underfull \hbox (badness 6252) in paragraph at lines 80--81
+Underfull \hbox (badness 6252) in paragraph at lines 84--85
 \OT1/ptm/m/n/10 stores MinIO ob-ject + DB row and en-queues
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 81--82
+Underfull \hbox (badness 10000) in paragraph at lines 85--86
 []\OT1/ptm/m/n/10 Parsing: resume-parser con-sumes event, ex-tracts
  []
 
 
-Underfull \hbox (badness 2538) in paragraph at lines 81--82
+Underfull \hbox (badness 2538) in paragraph at lines 85--86
 \OT1/ptm/m/n/10 skills/keywords/job-title hints, and up-dates resume-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 83--84
+Underfull \hbox (badness 10000) in paragraph at lines 87--88
 []\OT1/ptm/m/n/10 Matching and serv-ing: matcher con-sumes
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 83--84
+Underfull \hbox (badness 10000) in paragraph at lines 87--88
 \OT1/ptm/m/n/10 readi-ness events, writes ranked matches, emits
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 83--84
+Underfull \hbox (badness 10000) in paragraph at lines 87--88
 \OT1/pcr/m/n/10 job_matches_generated\OT1/ptm/m/n/10 ; recommendation-
  []
 
 
-Underfull \hbox (badness 3690) in paragraph at lines 83--84
+Underfull \hbox (badness 3690) in paragraph at lines 87--88
 \OT1/ptm/m/n/10 service serves cached pag-i-nated rec-om-men-da-tions;
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 83--84
+Underfull \hbox (badness 10000) in paragraph at lines 87--88
 \OT1/ptm/m/n/10 sched-uler sends im-me-di-ate and weekly email
  []
 
-<dataflow.png, id=25, 1027.84pt x 609.27625pt>
+<dataflow.png, id=110, 1027.84pt x 609.27625pt>
 File: dataflow.png Graphic file (type png)
 <use dataflow.png>
-Package pdftex.def Info: dataflow.png  used on input line 92.
+Package pdftex.def Info: dataflow.png  used on input line 96.
 (pdftex.def)             Requested size: 232.19843pt x 137.63904pt.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
@@ -497,24 +500,15 @@ Before submitting the final camera ready copy, remember to:
  process uses the appropriate paper size.
 
 [3] (./Report.aux)
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-
-Package rerunfilecheck Warning: File `Report.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `Report.out':
-(rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  9AC7DF4108AC0F0EF3779A829EB6F141;4075.
+Package rerunfilecheck Info: File `Report.out' has not changed.
+(rerunfilecheck)             Checksum: 9AC7DF4108AC0F0EF3779A829EB6F141;4075.
  ) 
 Here is how much of TeX's memory you used:
- 9713 strings out of 476041
- 156158 string characters out of 5793174
+ 9728 strings out of 476041
+ 156406 string characters out of 5793174
  1871388 words of memory out of 6000000
- 30033 multiletter control sequences out of 15000+600000
- 546005 words of font info for 93 fonts, out of 8000000 for 9000
+ 30049 multiletter control sequences out of 15000+600000
+ 543730 words of font info for 85 fonts, out of 8000000 for 9000
  1137 hyphenation exceptions out of 8191
  75i,8n,76p,1103b,437s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></us
@@ -525,10 +519,10 @@ r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share
 ype1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/
 utmbi8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></u
 sr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Report.pdf (3 pages, 586359 bytes).
+Output written on Report.pdf (3 pages, 588221 bytes).
 PDF statistics:
- 107 PDF objects out of 1000 (max. 8388607)
- 81 compressed objects within 1 object stream
+ 178 PDF objects out of 1000 (max. 8388607)
+ 151 compressed objects within 2 object streams
  34 named destinations out of 1000 (max. 500000)
- 11 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 195 words of extra memory for PDF output out of 10000 (max. 10000000)
 

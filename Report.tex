@@ -31,10 +31,14 @@
 \maketitle
 
 \begin{abstract}
-CloudNative Job Finder is a cloud-native distributed platform for resume-aware job discovery under continuously changing external data. The implementation uses microservices in Go and Python, a Next.js frontend, asynchronous event processing, and containerized infrastructure. The architecture separates user-facing REST APIs from long-running ingestion and ranking workers, enabling independent scaling and failure isolation. Transactional data is stored in PostgreSQL, resume binaries in MinIO, recommendation responses in Redis, and searchable job documents in Meilisearch. Event propagation is handled through an outbox relay with RabbitMQ and Kafka support, enabling retry-aware delivery and staged stream evolution. This report presents a repository-grounded analysis of system structure, communication pipeline, technology rationale, deployment model, and engineering trade-offs. Repository: \url{https://github.com/Team-Parashuram/CloudNative-Job-Finder}.
+Cloud-Native Job Finder is a cloud-native distributed platform for resume-aware job discovery under continuously changing external data. The system is implemented using microservices in Go and Python, a Next.js frontend, asynchronous event processing, and containerized infrastructure.
+The architecture separates user-facing REST APIs from long-running ingestion and ranking workers, enabling independent scaling and failure isolation. Transactional data is stored in PostgreSQL, resume binaries in MinIO, recommendation responses in Redis, and searchable job documents in Meilisearch.
+Event propagation is handled through an outbox relay with RabbitMQ and Kafka support, enabling retry-aware delivery and staged stream evolution.
+This report presents a repository-grounded analysis of system structure, communication pipeline, technology rationale, deployment model, and engineering trade-offs.
+\href{https://github.com/Team-Parashuram/CloudNative-Job-Finder}{GitHub Link - Repository}
 \end{abstract}
 
-\begin{IEEEkeywords}
+\begin{IEEEkeywords} 
 cloud-native systems, microservices, event-driven architecture, distributed recommendation, outbox pattern
 \end{IEEEkeywords}
 
