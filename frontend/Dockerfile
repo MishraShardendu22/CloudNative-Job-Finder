@@ -16,13 +16,16 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PNPM_HOME=/pnpm
-ENV PATH=$PNPM_HOME:$PATH
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
-RUN corepack enable
+RUN addgroup -S nextjs && adduser -S nextjs -G nextjs
 
-COPY --from=builder /app /app
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./app/.next/static
+
+USER nextjs
 
 EXPOSE 3000
 
-CMD ["pnpm", "start"]
+CMD ["node", "app/server.js"]

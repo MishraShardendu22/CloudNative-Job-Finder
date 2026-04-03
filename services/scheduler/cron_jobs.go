@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"job-finder/shared/config"
 
@@ -16,6 +17,7 @@ func (a *app) startCronJobs() {
 	scrapeSpec := config.GetEnv("CRON_SCRAPE", "*/30 * * * *")
 	matchSpec := config.GetEnv("CRON_MATCH", "15 * * * *")
 	weeklySpec := config.GetEnv("CRON_WEEKLY_EMAIL", "0 9 * * 1")
+	bootstrapOnStartup := config.GetBool("RUN_BOOTSTRAP_ON_STARTUP", true)
 
 	_, err := cronRunner.AddFunc(scrapeSpec, func() {
 		if err := a.triggerScrape(context.Background()); err != nil {
@@ -46,6 +48,31 @@ func (a *app) startCronJobs() {
 
 	cronRunner.Start()
 	log.Printf("scheduler cron started: scrape=%s match=%s weekly=%s", scrapeSpec, matchSpec, weeklySpec)
+
+	if bootstrapOnStartup {
+		a.runStartupBootstrap()
+	}
+}
+
+func (a *app) runStartupBootstrap() {
+	go func() {
+		// Seed jobs immediately so fresh deployments do not wait for cron boundaries.
+		scrapeCtx, cancelScrape := context.WithTimeout(context.Background(), 2*time.Minute)
+		defer cancelScrape()
+		if err := a.triggerScrape(scrapeCtx); err != nil {
+			log.Printf("startup scrape failed: %v", err)
+			return
+		}
+
+		// Fallback full-match after scrape to avoid empty recommendations on first run.
+		time.Sleep(20 * time.Second)
+
+		matchCtx, cancelMatch := context.WithTimeout(context.Background(), 2*time.Minute)
+		defer cancelMatch()
+		if err := a.triggerMatchAll(matchCtx); err != nil {
+			log.Printf("startup matching failed: %v", err)
+		}
+	}()
 }
 
 func (a *app) triggerScrape(ctx context.Context) error {

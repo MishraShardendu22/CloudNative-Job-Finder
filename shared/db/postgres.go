@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -26,6 +27,11 @@ func NewPool(ctx context.Context, databaseURL string) (*pgxpool.Pool, error) {
 	if err := pool.Ping(ctx); err != nil {
 		pool.Close()
 		return nil, err
+	}
+
+	if err := ensureSchema(ctx, pool); err != nil {
+		pool.Close()
+		return nil, fmt.Errorf("ensure schema: %w", err)
 	}
 
 	return pool, nil

@@ -1,0 +1,9 @@
+.git
+.gitignore
+.vscode
+**/.DS_Store
+**/*.md
+**/node_modules
+**/.next
+frontend
+infrastructure
